@@ -4,7 +4,7 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 bool InverseTaskTest::UnitTest1::compare(int num)
 {
-    std::array<double, 6> res = nikita::FanucModel::getCoordsFromMat(model.fanucForwardTask(coordsCart[num]));
+    std::array<double, 6> res = nikita::FanucModel::getCoordsFromMat(model.fanucForwardTask(coords[num]));
     cv::Mat resInv = model.inverseTask(res);
     bool* f = new bool[resInv.rows];
     for (int i = 0; i < resInv.rows; ++i)
@@ -12,7 +12,7 @@ bool InverseTaskTest::UnitTest1::compare(int num)
         f[i] = true;
         for (int j = 0; j < 6; ++j)
         {
-            if (abs(resInv.at<double>(i, j) - coordsCart[num][j]) > 1e-5)
+            if (abs(resInv.at<double>(i, j) - coords[num][j]) > 1e-5)
             {
                 f[i] = false;
             }

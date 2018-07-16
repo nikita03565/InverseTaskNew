@@ -12,7 +12,7 @@ namespace InverseTaskTest
     TEST_CLASS(UnitTest1)
     {
      nikita::FanucModel model;
-     std::array<std::array<double, 6>, 72> coordsCart
+     std::array<std::array<double, 6>, 72> coords
      { {
          { 40, 40, 40, 40, 40, 40 },
      { 40, 40, 40, 40, 40, -40 },
