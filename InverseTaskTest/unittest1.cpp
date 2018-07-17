@@ -12,7 +12,7 @@ bool InverseTaskTest::UnitTest1::compare(int num)
         f[i] = true;
         for (int j = 0; j < 6; ++j)
         {
-            if (abs(resInv.at<double>(i, j) - coords[num][j]) > 1e-5)
+            if (abs(resInv.at<double>(i, j) - coords[num][j]) > 1e-4)
             {
                 f[i] = false;
             }
@@ -384,4 +384,44 @@ void InverseTaskTest::UnitTest1::testMethod70()
 void InverseTaskTest::UnitTest1::testMethod71()
 {
     Assert::AreEqual(true, compare(71));
+}
+
+void InverseTaskTest::UnitTest1::testMethod72()
+{
+    Assert::AreEqual(true, compare(72));
+}
+
+void InverseTaskTest::UnitTest1::testMethod73()
+{
+    Assert::AreEqual(true, compare(73));
+}
+
+void InverseTaskTest::UnitTest1::testMethod74()
+{
+    Assert::AreEqual(true, compare(74));
+}
+
+void InverseTaskTest::UnitTest1::testMethod75()
+{
+    Assert::AreEqual(true, compare(75));
+}
+
+void InverseTaskTest::UnitTest1::testMethod76()
+{
+    Assert::AreEqual(true, compare(76));
+}
+
+void InverseTaskTest::UnitTest1::testMethod77()
+{
+    Assert::AreEqual(true, compare(77));
+}
+
+void InverseTaskTest::UnitTest1::testMethod78()
+{
+    Assert::AreEqual(true, compare(78));
+}
+
+void InverseTaskTest::UnitTest1::testMethod79()
+{
+    Assert::AreEqual(true, compare(79));
 }

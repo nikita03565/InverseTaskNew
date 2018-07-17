@@ -246,7 +246,7 @@ cv::Mat FanucModel::inverseTask(const std::array<double, 6>& coordIn)
         }
     }
 
-    int k = 4;
+    int k = 2;
     cv::Mat thetaPrefinal(ind.size() * k, 6, cv::DataType<double>::type);
     for (int it = 0; it < ind.size(); ++it)
     {
@@ -257,7 +257,7 @@ cv::Mat FanucModel::inverseTask(const std::array<double, 6>& coordIn)
             thetaPrefinal.at<double>(it * k + zt, 2) = theta.at<double>(ind[it], 2);
         }
     }
-    
+
     for (int it = 0; it < ind.size(); ++it)
     {
         cv::Mat r36(3, 3, cv::DataType<double>::type), r03(3, 3, cv::DataType<double>::type);
@@ -268,61 +268,61 @@ cv::Mat FanucModel::inverseTask(const std::array<double, 6>& coordIn)
 
         r03 = qi(param[0]._alphaParam, q[0]) * qi(param[1]._alphaParam, q[1]) * qi(param[2]._alphaParam, q[2]);
         r36 = r03.inv() * rotMatrix(coord[3] / 180. * PI, coord[4] / 180. * PI, coord[5] / 180. * PI);
-        //std::cout << "r36:\n" << r36 << '\n';
 
-        thetaPrefinal.at<double>(it * k, 3) = atan2(r36.at<double>(1, 2), r36.at<double>(0, 2));
-        thetaPrefinal.at<double>(it * k, 4) = atan2(r36.at<double>(1, 2) / sin(thetaPrefinal.at<double>(it * k, 3)), r36.at<double>(2, 2));
-        thetaPrefinal.at<double>(it * k, 5) = atan2(r36.at<double>(2, 1), -r36.at<double>(2, 0));
-  
-        thetaPrefinal.at<double>(it * k + 1, 3) = PI + atan2(r36.at<double>(1, 2), r36.at<double>(0, 2));
-        thetaPrefinal.at<double>(it * k + 1, 4) = -atan2(r36.at<double>(1, 2) / sin(atan2(r36.at<double>(1, 2), r36.at<double>(0, 2))), r36.at<double>(2, 2));
-        thetaPrefinal.at<double>(it * k + 1, 5) = PI + atan2(r36.at<double>(2, 1), -r36.at<double>(2, 0));
+        const double xi = r36.at<double>(0, 2);
+        const double y = r36.at<double>(1, 2);
+        const double z = r36.at<double>(2, 2);
 
-        thetaPrefinal.at<double>(it * k + 2, 3) = -PI + atan2(r36.at<double>(1, 2), r36.at<double>(0, 2));
-        thetaPrefinal.at<double>(it * k + 2, 4) = -atan2(r36.at<double>(1, 2) / sin(atan2(r36.at<double>(1, 2), r36.at<double>(0, 2))), r36.at<double>(2, 2));
-        thetaPrefinal.at<double>(it * k + 2, 5) = -PI + atan2(r36.at<double>(2, 1), -r36.at<double>(2, 0));
+        double tau1 = (xi * sin(param[3]._alphaParam) + sqrt((xi*xi + y * y)*sin(param[3]._alphaParam)*sin(param[3]._alphaParam)
+            - (cos(param[4]._alphaParam) - z * cos(param[3]._alphaParam))*(cos(param[4]._alphaParam) - z * cos(param[3]._alphaParam))))
+            / (cos(param[4]._alphaParam) - z * cos(param[3]._alphaParam) - y * sin(param[3]._alphaParam));
+        double tau2 = (xi * sin(param[3]._alphaParam) - sqrt((xi*xi + y * y)*sin(param[3]._alphaParam)*sin(param[3]._alphaParam)
+            - (cos(param[4]._alphaParam) - z * cos(param[3]._alphaParam))*(cos(param[4]._alphaParam) - z * cos(param[3]._alphaParam))))
+            / (cos(param[4]._alphaParam) - z * cos(param[3]._alphaParam) - y * sin(param[3]._alphaParam));
 
-        thetaPrefinal.at<double>(it * k + 3, 3) = PI + atan2(r36.at<double>(1, 2), r36.at<double>(0, 2));
-        thetaPrefinal.at<double>(it * k + 3, 4) = -atan2(r36.at<double>(1, 2) / sin(atan2(r36.at<double>(1, 2), r36.at<double>(0, 2))), r36.at<double>(2, 2));
-        thetaPrefinal.at<double>(it * k + 3, 5) = -PI + atan2(r36.at<double>(2, 1), -r36.at<double>(2, 0));      
+        thetaPrefinal.at<double>(it * k, 3) = 2.0 * atan(tau1); 
+        thetaPrefinal.at<double>(it * k + 1, 3) = 2.0 * atan(tau2); 
+
+        double s51 = ((sin(param[5]._alphaParam)*r36.at<double>(0,1) + cos(param[5]._alphaParam)*r36.at<double>(0, 2))*cos(thetaPrefinal.at<double>(it * k, 3))
+            + (sin(param[5]._alphaParam)*r36.at<double>(1, 1) + cos(param[5]._alphaParam)*r36.at<double>(1, 2))*sin(thetaPrefinal.at<double>(it * k, 3)))/sin(param[4]._alphaParam);
+      
+        double s52 = ((sin(param[5]._alphaParam)*r36.at<double>(0, 1) + cos(param[5]._alphaParam)*r36.at<double>(0, 2))*cos(thetaPrefinal.at<double>(it * k + 1, 3))
+            + (sin(param[5]._alphaParam)*r36.at<double>(1, 1) + cos(param[5]._alphaParam)*r36.at<double>(1, 2))*sin(thetaPrefinal.at<double>(it * k + 1, 3))) / sin(param[4]._alphaParam);
+
+        double c51 = (-cos(param[3]._alphaParam)*(sin(param[5]._alphaParam)*r36.at<double>(0, 1) + cos(param[5]._alphaParam)*r36.at<double>(0, 2))*sin(thetaPrefinal.at<double>(it * k, 3) = 2.0 * atan(tau1))
+            + cos(param[3]._alphaParam)*(sin(param[5]._alphaParam)*r36.at<double>(1, 1) + cos(param[5]._alphaParam)*r36.at<double>(1, 2))*cos(thetaPrefinal.at<double>(it * k, 3) = 2.0 * atan(tau1))
+            + sin(param[3]._alphaParam)*(sin(param[5]._alphaParam)*r36.at<double>(2, 1) + cos(param[5]._alphaParam)*r36.at<double>(2, 2)))/(-sin(param[4]._alphaParam));
+        
+        double c52 = (-cos(param[3]._alphaParam)*(sin(param[5]._alphaParam)*r36.at<double>(0, 1) + cos(param[5]._alphaParam)*r36.at<double>(0, 2))*sin(thetaPrefinal.at<double>(it * k + 1, 3))
+            + cos(param[3]._alphaParam)*(sin(param[5]._alphaParam)*r36.at<double>(1, 1) + cos(param[5]._alphaParam)*r36.at<double>(1, 2))*cos(thetaPrefinal.at<double>(it * k + 1, 3))
+            + sin(param[3]._alphaParam)*(sin(param[5]._alphaParam)*r36.at<double>(2, 1) + cos(param[5]._alphaParam)*r36.at<double>(2, 2))) / (-sin(param[4]._alphaParam));
+
+        thetaPrefinal.at<double>(it * k, 4) = (s51 >= 0 ? acos(c51) : -acos(c51));
+        thetaPrefinal.at<double>(it * k + 1, 4) = (s52 >= 0 ? acos(c52) : -acos(c52));
+
+        double c61 = (r36.at<double>(0,0)*cos(thetaPrefinal.at<double>(it*k, 3)) + r36.at<double>(1, 0)*sin(thetaPrefinal.at<double>(it*k, 3)))*cos(thetaPrefinal.at<double>(it*k,4)) 
+            + (-cos(param[3]._alphaParam)*(r36.at<double>(0, 0)*sin(thetaPrefinal.at<double>(it*k, 3)) - r36.at<double>(1, 0)*cos(thetaPrefinal.at<double>(it*k, 3))) + sin(param[3]._alphaParam)*r36.at<double>(2,0)) 
+        * sin(thetaPrefinal.at<double>(it*k, 4));
+
+        double c62 = (r36.at<double>(0, 0)*cos(thetaPrefinal.at<double>(it*k+1, 3)) + r36.at<double>(1, 0)*sin(thetaPrefinal.at<double>(it*k+1, 3)))*cos(thetaPrefinal.at<double>(it*k+1, 4))
+            + (-cos(param[3]._alphaParam)*(r36.at<double>(0, 0)*sin(thetaPrefinal.at<double>(it*k+1, 3)) - r36.at<double>(1, 0)*cos(thetaPrefinal.at<double>(it*k+1, 3))) + sin(param[3]._alphaParam)*r36.at<double>(2, 0))
+            * sin(thetaPrefinal.at<double>(it*k+1, 4));
+
+        double s61 = -cos(param[4]._alphaParam)*(r36.at<double>(0,0)*cos(thetaPrefinal.at<double>(it*k, 3)) + r36.at<double>(1, 0)*sin(thetaPrefinal.at<double>(it*k, 3)))*sin(thetaPrefinal.at<double>(it*k,4)) 
+            + cos(param[4]._alphaParam)*(-cos(param[3]._alphaParam)*(r36.at<double>(0, 0)*sin(thetaPrefinal.at<double>(it*k, 3)) - r36.at<double>(1, 0)*cos(thetaPrefinal.at<double>(it*k, 3))) + sin(param[3]._alphaParam)*r36.at<double>(2,0))
+        * cos(thetaPrefinal.at<double>(it*k, 4)) + (sin(param[3]._alphaParam)*(r36.at<double>(0, 0)*sin(thetaPrefinal.at<double>(it*k, 3)) - r36.at<double>(1, 0)*cos(thetaPrefinal.at<double>(it*k, 3))) + cos(param[3]._alphaParam)*r36.at<double>(2, 0))*sin(param[4]._alphaParam);
+ 
+        double s62 = -cos(param[4]._alphaParam)*(r36.at<double>(0, 0)*cos(thetaPrefinal.at<double>(it*k+1, 3)) + r36.at<double>(1, 0)*sin(thetaPrefinal.at<double>(it*k+1, 3)))*sin(thetaPrefinal.at<double>(it*k+1, 4))
+            + cos(param[4]._alphaParam)*(-cos(param[3]._alphaParam)*(r36.at<double>(0, 0)*sin(thetaPrefinal.at<double>(it*k+1, 3)) - r36.at<double>(1, 0)*cos(thetaPrefinal.at<double>(it*k+1, 3))) + sin(param[3]._alphaParam)*r36.at<double>(2, 0))
+            * cos(thetaPrefinal.at<double>(it*k+1, 4)) + (sin(param[3]._alphaParam)*(r36.at<double>(0, 0)*sin(thetaPrefinal.at<double>(it*k+1, 3)) - r36.at<double>(1, 0)*cos(thetaPrefinal.at<double>(it*k+1, 3))) + cos(param[3]._alphaParam)*r36.at<double>(2, 0))*sin(param[4]._alphaParam);
+       
+        thetaPrefinal.at<double>(it * k, 5) = -(s61 >= 0 ? acos(c61) : -acos(c61));
+        thetaPrefinal.at<double>(it * k + 1, 5) = -(s62 >= 0 ? acos(c62) : -acos(c62));
+
+        thetaPrefinal.at<double>(it * k, 3) = -thetaPrefinal.at<double>(it * k, 3);
+        thetaPrefinal.at<double>(it * k + 1, 3) = -thetaPrefinal.at<double>(it * k + 1, 3);
     }
-    //std::cout << thetaPrefinal * 180.0 / PI << '\n';
-    std::vector<int> indFinal;
-    for (int it = 0; it < thetaPrefinal.rows; ++it)
-    {
-        bool isOk = true;
-
-        if (abs(thetaPrefinal.at<double>(it, 3)) > 210. / 180. * PI)
-        {
-            isOk = false;
-        }
-        if (abs(thetaPrefinal.at<double>(it, 4)) > 140. / 180. * PI)
-        {
-            isOk = false;
-        }
-        if (abs(thetaPrefinal.at<double>(it, 5)) > 270. / 180. * PI)
-        {
-            isOk = false;
-        }
-
-        if (isOk)
-        {
-            indFinal.push_back(it);
-        }
-    }
-
-    cv::Mat thetaFinal(indFinal.size(), 6, cv::DataType<double>::type);
-    for (int it = 0; it < indFinal.size(); ++it)
-    {
-        thetaFinal.at<double>(it, 0) = thetaPrefinal.at<double>(indFinal[it], 0);
-        thetaFinal.at<double>(it, 1) = thetaPrefinal.at<double>(indFinal[it], 1);
-        thetaFinal.at<double>(it, 2) = thetaPrefinal.at<double>(indFinal[it], 2);
-        thetaFinal.at<double>(it, 3) = -thetaPrefinal.at<double>(indFinal[it], 3);
-        thetaFinal.at<double>(it, 4) = thetaPrefinal.at<double>(indFinal[it], 4);
-        thetaFinal.at<double>(it, 5) = -thetaPrefinal.at<double>(indFinal[it], 5);
-    }
-
-    return thetaFinal * 180. / FanucModel::PI;
+    return thetaPrefinal * 180.0 / PI;
 }
 
 } //namespace nikita

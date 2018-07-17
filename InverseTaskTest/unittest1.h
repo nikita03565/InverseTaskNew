@@ -12,7 +12,7 @@ namespace InverseTaskTest
     TEST_CLASS(UnitTest1)
     {
      nikita::FanucModel model;
-     std::array<std::array<double, 6>, 72> coords
+     std::array<std::array<double, 6>, 80> coords
      { {
          { 40, 40, 40, 40, 40, 40 },
      { 40, 40, 40, 40, 40, -40 },
@@ -93,7 +93,16 @@ namespace InverseTaskTest
      { -40, -40, -40, -140, 40, 140 },
      { -40, -40, -40, -140, 40, -140 },
      { -40, -40, -40, -140, -40, 140 },
-     { -40, -40, -40, -140, -40, -140 }
+     { -40, -40, -40, -140, -40, -140 },
+
+     { -40, -40, 0, 0, 40, 140 },
+     { -40, -0, -40, 0, 40, -140 },
+     { -40, -40, -40, 0, -40, 140 },
+     { -0, -40, -40, 0, 40, -140 },
+     { -40, -40, -40, 0, 40, 0 },
+     { -40, 50, -60, 10, 40, -14 },
+     { 40, -40, -40, -10, -40, 140 },
+     { -40, 40, -40, -140, 40, -140 }
          } };
      bool compare(int num);
      public:
@@ -169,6 +178,14 @@ namespace InverseTaskTest
         TEST_METHOD(testMethod69);
         TEST_METHOD(testMethod70);
         TEST_METHOD(testMethod71);
+        TEST_METHOD(testMethod72);
+        TEST_METHOD(testMethod73);
+        TEST_METHOD(testMethod74);
+        TEST_METHOD(testMethod75);
+        TEST_METHOD(testMethod76);
+        TEST_METHOD(testMethod77);
+        TEST_METHOD(testMethod78);
+        TEST_METHOD(testMethod79);
     };
 }
 
